@@ -17,14 +17,14 @@ class GraphEncoding:
         raise NotImplementedError("Not Implemented")
 
     def positioning_entropy(self):
-        dist = self.graph.stationary_dist #dist=di/vol(G)
-        return silearn.entropy(dist, dist) #-di/vol(G) log_2 di/vol(G)
+        dist = self.graph.stationary_dist
+        return silearn.entropy(dist, dist)
 
     def entropy_rate(self, reduction="vertex", norm=False):
         edges, p = self.graph.edges
         es, et = edges[:, 0], edges[:, 1]
-        nw = self.graph.vertex_weight_es[es] #第一列顶点的di E
-        entropy = silearn.entropy(p, p / nw) # -p log_2 p/di
+        nw = self.graph.vertex_weight_es[es]
+        entropy = silearn.entropy(p, p / nw)
 
         if norm:
             dist = self.graph.stationary_dist[es]
@@ -33,7 +33,7 @@ class GraphEncoding:
         if reduction == "none":
             return entropy
         elif reduction == "vertex":
-            return silearn.scatter_sum(entropy, et)  #按第二列顶点求和
+            return silearn.scatter_sum(entropy, et)
         elif reduction == "sum":
             return entropy.sum()
         else:
@@ -43,7 +43,7 @@ class GraphEncoding:
         edges, p = self.graph.edges
         es, et = edges[:, 0], edges[:, 1]
         # dist = self.graph.stationary_dist[es]
-        dist = self.graph.stationary_dist[es] #di/vol(G)
+        dist = self.graph.stationary_dist[es]
         # tot = w.sum()
         entropy = p * self.uncertainty(es, et, p)
 
@@ -77,15 +77,14 @@ class Partitioning(GraphEncoding):
         self.node_id = init_parition
 
     def uncertainty(self, es, et, p):
-        v1e = self.graph.stationary_dist[es]  #第一列顶点的di/vol(G) E
-        id_et = self.node_id[et] #第二列顶点所在社区 E
-        id_es = self.node_id[es] #第一列顶点所在社区 E
-        v2 = scatter_sum(self.graph.stationary_dist, self.node_id)  #按社区求di/vol(G),v2=vol(α)/vol(G),v2.sum=1
-        v2e = v2[id_es] #第一列顶点所在社区的vol(α)/vol(G)
-        flag = id_es != id_et #一条边连接两顶点是否在同一社区
+        v1e = self.graph.stationary_dist[es]
+        id_et = self.node_id[et]
+        id_es = self.node_id[es]
+        v2 = scatter_sum(self.graph.stationary_dist, self.node_id)
+        v2e = v2[id_es]
+        flag = id_es != id_et
         # print(v1e, v2, flag)
         return uncertainty(v1e / v2e) + flag * uncertainty(v2e / v2.sum())
-        # 第一列顶点的 log_2 di/vol(α)  +两顶点不在一个社区 log_2 vol(α)/vol(G)
 
     def structural_entropy(self, reduction="vertex", norm=False):
         entropy = super(Partitioning, self).structural_entropy(reduction, norm)
