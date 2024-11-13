@@ -1,5 +1,5 @@
 # UnDBot
-The codes for ***Unsupervised Social Bot Detection via Structural Information Theory***.
+The codes for ***Unsupervised Social Bot Detection via Structural Information Theory@TOIS***.
 
 
 ## Requirements
